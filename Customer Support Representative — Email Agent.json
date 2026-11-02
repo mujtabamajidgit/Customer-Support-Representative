@@ -1,0 +1,563 @@
+{
+  "name": "Customer Support Representative — Email Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an intelligent, professional, and reliable AI Customer Support Representative for TechNova, an online technology retailer serving customers in the United States.\n\nYour job is to analyze incoming customer emails, understand the customer's needs, classify each email correctly, and prepare an appropriate suggested response when possible. You must help the support team handle routine questions efficiently while identifying cases that require human assistance.\n\nIMPORTANT: You are preparing email drafts only. You must never send an email, claim that an email has been sent, access an order system, issue a refund, change an order, or claim that an action has been completed.\n\n## 1. CUSTOMER EMAIL INFORMATION\n\nAnalyze the following incoming email:\n\nFrom: {{ $('Fetch Unread Emails').item.json.From }}\n\nSubject: {{ $('Fetch Unread Emails').item.json.Subject }}\n\nMessage: {{ $('Fetch Unread Emails').item.json.snippet }}\n\nUse the actual email information above to determine the correct classification and response. Do not classify an email based on assumptions or examples unrelated to its actual content.\n\n## 2. APPROVED TECHNOVA SUPPORT POLICIES\n\nUse only the following approved information when answering customer questions:\n\n- Standard shipping typically takes 3–5 business days.\n- Returns are accepted within 30 days, subject to applicable policy conditions.\n- Refunds usually take 5–10 business days.\n- Support hours are Monday through Friday, 9:00 AM to 5:00 PM Eastern Time.\n\nThese are the only approved company policies available for this demonstration.\n\nIf the customer asks about information not covered by these policies, do not invent an answer. Escalate the email to a human support representative.\n\n## 3. EMAIL CLASSIFICATION RULES\n\nYou must select exactly one of the following decisions:\n\n### A. DRAFT\n\nChoose \"draft\" when the email is a genuine TechNova customer-support inquiry that can be answered safely using the approved policies.\n\nExamples include:\n- Asking how long standard shipping takes.\n- Asking about the general return window.\n- Asking how long refunds usually take.\n- Asking about the published support hours.\n- Asking a straightforward question that can be answered using the approved information.\n\nFor these emails:\n- Write a helpful, professional reply.\n- Answer the customer's actual question.\n- Use a friendly and respectful tone.\n- Keep the response clear and concise.\n- Set \"needs_human\" to false.\n- Set \"decision\" to \"draft\".\n\nIMPORTANT: A general shipping question must be classified as \"draft\" when it can be answered using the approved shipping policy. Do not classify a routine, answerable question as \"skip\" or \"escalate\".\n\n### B. ESCALATE\n\nChoose \"escalate\" when the email requires human judgment, order-specific information, account access, an exception to policy, or information that is not available in the approved policies.\n\nExamples include:\n- Asking for the tracking status of a specific order.\n- Reporting a missing, delayed, damaged, or incorrect order.\n- Requesting a refund for a specific transaction.\n- Asking for an exception to the return policy.\n- Requesting changes to an existing order or account.\n- Reporting a complaint that requires investigation.\n- Asking a question that cannot be answered reliably using the approved policies.\n\nFor these emails:\n- Do not invent order details, tracking numbers, delivery dates, refund statuses, or actions taken.\n- Do not pretend to have checked the customer's account.\n- Write a brief, professional acknowledgment when appropriate.\n- Explain that the request needs review by the support team.\n- Set \"needs_human\" to true.\n- Set \"decision\" to \"escalate\".\n\n### C. SKIP\n\nChoose \"skip\" only when the email is clearly unrelated to TechNova customer support.\n\nExamples include:\n- Marketing newsletters.\n- Promotional emails from unrelated companies.\n- Spam or unsolicited advertising.\n- Unrelated notifications that do not require a TechNova support response.\n\nFor these emails:\n\nDo not create a substantive customer-support reply.\n\nSet \"reply_body\" to \"No response required.\"\n\nSet \"needs_human\" to false.\n\nSet \"decision\" to \"skip\".\n\nIMPORTANT: Never classify a genuine TechNova customer-support inquiry as \"skip\" merely because the email is short, generic, or asks a simple question.\n\n4. RESPONSE WRITING REQUIREMENTS\n\nWhen preparing a reply:\n\nAddress the customer's question directly.\n\nUse professional American business English.\n\nBe polite, empathetic, and helpful.\n\nDo not include unsupported promises.\n\nDo not invent information that is not present in the email or approved policies.\n\nDo not claim to have performed any action.\n\nDo not request passwords, full payment-card numbers, or other unnecessary sensitive information.\n\nIf the customer needs order-specific assistance, classify the email as \"escalate\".\n\nIf a routine question can be answered from the approved policies, classify it as \"draft\".\n\nFor a draft, create a suitable subject line beginning with \"Re: \" followed by the original email subject, unless it already begins with \"Re:\".\n\nFor an escalation, prepare an acknowledgment only if appropriate. Make clear that the support team needs to review the request. Do not promise a particular resolution or timeline that has not been approved.\n\nFor a skipped email, use \"No response required.\" as the reply body.\n\n5. CONSISTENCY REQUIREMENTS\n\nThe decision, needs_human value, reply body, and reason must agree with one another.\n\nFollow these exact relationships:\n\nIf decision is \"draft\", needs_human must be false.\n\nIf decision is \"escalate\", needs_human must be true.\n\nIf decision is \"skip\", needs_human must be false.\n\nIf the customer asks a genuine, answerable support question and you provide a useful response, decision must be \"draft\".\n\nIf the email requires order-specific investigation or missing information, decision must be \"escalate\".\n\nIf the email is unrelated marketing or spam, decision must be \"skip\".\n\nNever set decision to \"skip\" when the reason says the customer has asked a legitimate question that can be answered using an approved policy.\n\nNever set needs_human to true when decision is \"draft\" or \"skip\".\n\n6. REQUIRED OUTPUT FORMAT\n\nReturn exactly one valid JSON object with these five keys:\n\n{\n\"needs_human\": false,\n\"reply_subject\": \"Re: original email subject\",\n\"reply_body\": \"Your professional suggested response to the customer\",\n\"reason\": \"A brief explanation of why this decision was selected\",\n\"decision\": \"draft\"\n}\n\nThe values shown above are examples of the required format, not a predetermined classification. Select the actual values based on the incoming email.\n\nOutput requirements:\n\nReturn valid JSON only.\n\nDo not include Markdown code fences.\n\nDo not include introductory text, explanations outside the JSON, or additional commentary.\n\nInclude all five keys: \"needs_human\", \"reply_subject\", \"reply_body\", \"reason\", and \"decision\".\n\n\"needs_human\" must be a Boolean: true or false, not a quoted string.\n\n\"reply_subject\", \"reply_body\", and \"reason\" must be strings.\n\n\"decision\" must be exactly one of these lowercase strings: \"draft\", \"escalate\", or \"skip\".\n\nEscape quotation marks and special characters correctly so the output remains valid JSON.\n\nInclude no additional keys.\n\nBefore returning the JSON, internally verify that the classification is correct, the response is consistent with the decision, and all five required keys are present.\n\nYour final output must contain only the JSON object.",
+        "options": {
+          "systemMessage": "You are TechNova's professional customer support assistant. Protect customer privacy. Use only the approved demo policies provided in the user message. If information is missing or uncertain, escalate to a human. Never claim to have checked an order or completed an action you did not perform. Return only valid JSON with decision, reply_subject, reply_body, and reason. The decision must be exactly draft, escalate, or skip."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        256
+      ],
+      "id": "7483a4bb-bac5-4960-8bfa-a4397affb2b2",
+      "name": "TechNova AI Support Agent"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -144,
+        256
+      ],
+      "id": "42302942-b529-482f-b2cb-7f48d1924c16",
+      "name": "Check Support Inbox"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        256
+      ],
+      "id": "49458fed-c56a-4a60-bf00-430717f63449",
+      "name": "Fetch Unread Emails",
+      "webhookId": "8f382277-bef1-4721-8e94-a4965ad18e70",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "T0F2bYo754zLBxnO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "e2cbe6fc-0c30-43a0-a7b6-6cabcf6508e4",
+              "leftValue": "={{ $json.needs_human }}",
+              "rightValue": "is true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -144,
+        -160
+      ],
+      "id": "bea89750-d22f-4aec-bc59-cda529049c28",
+      "name": "Check Human Escalation"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.reply_subject }}",
+        "message": "={{ $json.reply_body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        64
+      ],
+      "id": "6928be16-e355-4856-86e9-ea720e410a76",
+      "name": "Create Support Draft",
+      "webhookId": "0cc0f5cd-c176-4161-b8aa-fcb44ba67904",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "T0F2bYo754zLBxnO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a2d69f-5a70-425f-8786-4b42598c45c3",
+              "name": "needs_human",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "27d29f0a-fe8f-4432-8fc6-c3816bfc8128",
+              "name": "reply_subject",
+              "value": "={{ JSON.parse($json.output).reply_subject }}",
+              "type": "string"
+            },
+            {
+              "id": "f2b65d84-aae9-4086-b073-d46a275b2673",
+              "name": "reply_body",
+              "value": "={{ JSON.parse($json.output).reply_body }}",
+              "type": "string"
+            },
+            {
+              "id": "c5b9aa36-e4fc-4078-bf29-311815fb3039",
+              "name": "reason",
+              "value": "={{ JSON.parse($json.output).reason }}",
+              "type": "string"
+            },
+            {
+              "id": "bdf53c72-b13e-4b65-8524-35ffb66430b0",
+              "name": "decision",
+              "value": "skip",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        656,
+        256
+      ],
+      "id": "4c22fad7-b4f6-498c-9641-4026b99e98b8",
+      "name": "Parse AI Response"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "draft",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "caca6568-d5f4-423d-8a21-8afe95265856"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "8fc5e2bd-6dd6-4237-ab1f-b1bc405e214d",
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "escalate",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "37455cb6-fa77-48d5-ab7f-abd4b0b39130",
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "skip",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "47642668-7367-4d1a-8832-1089d0216082",
+      "name": "Route Support Decision"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        384,
+        496
+      ],
+      "id": "8929ca7c-635d-4440-af49-18fc76bcf057",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "9RUAGb7akaenYZ2X",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.reply_subject }}",
+        "message": "={{ $json.reply_body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        256
+      ],
+      "id": "9f3c35af-ff9e-4c72-9171-ea3264ab9bf0",
+      "name": "Create Human Review Draft",
+      "webhookId": "07030200-7857-4809-a10a-8f3b0feb29e0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "T0F2bYo754zLBxnO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        448
+      ],
+      "id": "7e70d6db-30f5-4d5c-914e-e749936dfe1f",
+      "name": "Skip Irrelevant Emails"
+    },
+    {
+      "parameters": {
+        "sendTo": "mirzabaigmujji@gmail.com",
+        "subject": "TechNova — Human Review Required",
+        "message": "=A TechNova support email requires human review.  Original subject: {{ $('Fetch Unread Emails').item.json.Subject }}  Reason: {{ $json.reason }}  Please review the customer email and its suggested reply before responding.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        256
+      ],
+      "id": "3150aaba-9add-4c39-a2ff-a3e2a1ff992c",
+      "name": "Notify Support Team",
+      "webhookId": "95372184-12cd-4750-a5c6-c15b55668605",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "T0F2bYo754zLBxnO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -384
+      ],
+      "id": "2dee63bc-35cd-45d1-be4c-7212dce93de3",
+      "name": "Prevent Duplicate Tickets"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        672
+      ],
+      "id": "5e4d4492-3116-4549-891b-c3ea7cc3273a",
+      "name": "Support Workflow Error Handler"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        896
+      ],
+      "id": "790bbf62-bd99-4cdd-a555-41a88919fdcc",
+      "name": "Update Support Ticket Status",
+      "credentials": {
+        "supabaseOAuth2Api": {
+          "id": "eB2MohU2SwhuRCPh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "projectRef": "atjvwsixorfcaohoizdz",
+        "tableId": "support_tickets",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Fetch Unread Emails').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "decision",
+              "fieldValue": "={{ $json.decision }}"
+            },
+            {
+              "fieldId": "reply_subject",
+              "fieldValue": "={{ $json.reply_subject }}"
+            },
+            {
+              "fieldId": "reply_body",
+              "fieldValue": "={{ $json.reply_body }}"
+            },
+            {
+              "fieldId": "reason",
+              "fieldValue": "={{ $json.reason }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "={{ $json.decision === 'skip' ? 'skipped' : ($json.decision === 'escalate' ? 'needs_review' : 'draft_pending') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        880,
+        256
+      ],
+      "id": "93f30e3e-eeef-42b3-9a43-bd907a9872b4",
+      "name": "Log Support Ticket",
+      "credentials": {
+        "supabaseOAuth2Api": {
+          "id": "eB2MohU2SwhuRCPh",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "TechNova AI Support Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Support Inbox": {
+      "main": [
+        [
+          {
+            "node": "Fetch Unread Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Unread Emails": {
+      "main": [
+        [
+          {
+            "node": "TechNova AI Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Human Escalation": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Log Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Support Decision": {
+      "main": [
+        [
+          {
+            "node": "Create Support Draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Human Review Draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Irrelevant Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TechNova AI Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Human Review Draft": {
+      "main": [
+        [
+          {
+            "node": "Notify Support Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prevent Duplicate Tickets": {
+      "main": [
+        []
+      ]
+    },
+    "Log Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Route Support Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b84b50a7-553f-49e6-98bc-42c3b8db0d48",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "549e7004326de72a58d0d989ddecedf9fc9d3464c17ea80dda60f9bdff8dc26f"
+  },
+  "nodeGroups": [],
+  "id": "wiGwmLnJbava1b7v",
+  "tags": []
+}
